@@ -23,7 +23,7 @@ export default function Navbar({location}: Props) {
         setCity(value);
         if(value.length >= 3){
             try{
-                const response = await axios.get(`http://api.openweathermap.org/data/2.5/find?q=${value}&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}`)
+                const response = await axios.get(`https://api.openweathermap.org/data/2.5/find?q=${value}&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}`)
                 const suggestions = response.data.list.map((item:any) =>item.name)
                 setSuggestions(suggestions)
                 setError('')
