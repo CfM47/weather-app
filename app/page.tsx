@@ -1,6 +1,5 @@
 'use client'
 
-import Image from "next/image";
 import Navbar from "./src/components/Navbar";
 import { useQuery } from "react-query";
 import axios from "axios";
@@ -8,19 +7,17 @@ import { format, fromUnixTime, parseISO } from "date-fns";
 import Container from "./src/components/Container";
 import convertKelvinToCelsius from "./src/utils/convertKelvingToCelsius";
 import WeatherIcon from "./src/components/WeatherIcon";
-import getDayOrNightIcon from "./src/utils/getDayOrNightIcon";
-import { metersToKilometers } from "./src/utils/metersToKilometers";
 import WeatherDetails from "./src/components/WeatherDetails";
-import { convertWindSpeed } from "./src/utils/convertWindSpeed";
 import ForcastWeatherDetail from "./src/components/ForcastWeatherDetail";
 import { loadingCityAtom, placeAtom } from "./atom";
 import { useAtom } from "jotai";
 import { useEffect } from "react";
+import HourWeatherIcon from "./src/components/HourWeatherIcon";
 
 
 //https://api.openweathermap.org/data/2.5/forecast?q=${place}&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}&cnt=56 
 
-interface WeatherData {
+export interface WeatherData {
   cod: string;
   message: number;
   cnt: number;
@@ -40,7 +37,7 @@ interface WeatherData {
   };
 }
 
-interface WeatherInfo {
+export interface WeatherInfo {
   dt: number;
   main: {
     temp: number;
@@ -128,18 +125,15 @@ export default function Home() {
                   <div className="flex flex-col px-4">
                     <span className="text-5xl">{convertKelvinToCelsius(firstData?.main.temp ?? 296.37)}º</span>
                     <p className="text-xs space-x-1 whitespace-nowrap"><span>Feels Like</span><span>{convertKelvinToCelsius(firstData?.main.feels_like ?? 22)}º</span>
-                      <p className="text-xs space-x-2"><span>{convertKelvinToCelsius(firstData?.main.temp_min ?? 22)}º↓{" "}</span>
+                      <p className="text-xs space-x-2">
+                        <span>{convertKelvinToCelsius(firstData?.main.temp_min ?? 22)}º↓{" "}</span>
                         <span>{" "}{convertKelvinToCelsius(firstData?.main.temp_min ?? 22)}º↑</span>
                       </p>
                     </p>
                   </div>
                   <div className="flex gap-10 sm:gap-10 overflow-x-auto w-full justify-between pr-3">
                     {data?.list.map((d,i)=>(
-                      <div key={i} className="flex flex-col justify-between gap-2 items-center text-xs font-semibold">
-                        <p className="whitespace-nowrap">{format(parseISO(d.dt_txt), "h:mm a")}</p>
-                        <WeatherIcon iconName={getDayOrNightIcon(d?.weather[0].icon, d?.dt_txt)}></WeatherIcon>
-                        <p>{convertKelvinToCelsius(d?.main.temp ?? 297)}º</p>
-                      </div>
+                      <HourWeatherIcon data={d} key={i}/>
                     ))}
                   </div>
                 </Container>
@@ -149,21 +143,22 @@ export default function Home() {
               <div className="flex gap-4">
                 <Container className="w-fit justify-center flex-col px-4 items-center">
                   <p className="capitalize text-center">{firstData?.weather[0].description}</p>
-                  <WeatherIcon iconName={getDayOrNightIcon(firstData?.weather[0].icon ?? "", firstData?.dt_txt ?? "")}></WeatherIcon>
+                  <WeatherIcon iconName={firstData?.weather[0].icon ?? ""} dateTimeString={firstData?.dt_txt ?? ""}></WeatherIcon>
                 </Container>
                 
                 <Container className="bg-yellow-300/80 px-6 gap-4 justify-between overflow-x-auto">
-                  <WeatherDetails 
-                    visibility={metersToKilometers(firstData?.visibility ?? 10000)} 
-                    airPressure={`${firstData?.main.pressure} hPa`}
-                    humidity={`${firstData?.main.humidity} %`}
-                    sunrise={format(fromUnixTime(data?.city.sunrise ?? 1702949452), "H:mm")}
-                    sunset={format(fromUnixTime(data?.city.sunset ?? 1702517657), "H:mm")}
-                    windspeed={convertWindSpeed(firstData?.wind.speed ?? 1.64)}
+                  <WeatherDetails
+                    visibility={firstData?.visibility ?? 10000} 
+                    airPressure={firstData?.main.pressure ?? 1012}
+                    humidity={firstData?.main.humidity ?? 61}
+                    sunrise={data?.city.sunrise ?? 1702949452}
+                    sunset={data?.city.sunset ?? 1702517657}
+                    windspeed={firstData?.wind.speed ?? 1.64}
                   />
                 </Container>
               </div>
             </section>
+
             <section className="flex w-full flex-col gap-4">
               <p className="text-2xl">Forcast (7 days)</p>
               {firstDataForEachDate.map((d,i)=>(
@@ -177,12 +172,12 @@ export default function Home() {
                   temp={d?.main.temp ?? 0}
                   temp_max={d?.main.temp_max ?? 0}
                   temp_min={d?.main.temp_min ?? 0}
-                  airPressure={`${d?.main.pressure} hPa`}
-                  humidity={`${d?.main.humidity}%`}
-                  sunrise={format(fromUnixTime(data?.city.sunrise ?? 1702517657), "H:mm")}
-                  sunset={format(fromUnixTime(data?.city.sunset ?? 1702517657), "H:mm")}
-                  visibility={`${metersToKilometers(d?.visibility ?? 10000)}`}
-                  windspeed={`${convertWindSpeed(d?.wind.speed ?? 1.64)}`}
+                  airPressure={d?.main.pressure ?? 1012}
+                  humidity={d?.main.humidity ?? 61}
+                  sunrise={data?.city.sunrise ?? 1702517657}
+                  sunset={data?.city.sunset ?? 1702517657}
+                  visibility={d?.visibility ?? 10000}
+                  windspeed={d?.wind.speed ?? 1.64}
                 />
               ))}
             </section>
@@ -242,7 +237,10 @@ function SkeletonLoadingComponent(){
         </div>
       </section>
       <section className="flex w-full flex-col gap-4">
-        <p className="text-2xl">Forcast (7 days)</p>
+        <h2 className="flex gap-1 text-2xl items-end">
+          {/* Placeholder for day name and date */}
+          <div className="animate-pulse h-5 w-20 bg-gray-200 rounded"></div>
+        </h2>
         {[1, 2, 3, 4, 5, 6, 7].map((index) => (
           <ForcastSkeleton key={index} />
         ))}
