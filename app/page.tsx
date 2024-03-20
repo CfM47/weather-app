@@ -126,21 +126,10 @@ export default function Home() {
                 </h2>
                 <Container className="gap-10 px-6 items-center">
                   <div className="flex flex-col px-4">
-                    <span className="text-5xl">
-                      {convertKelvinToCelsius(firstData?.main.temp ?? 296.37)}º
-                    </span>
-                    <p className="text-xs space-x-1 whitespace-nowrap">
-                      <span>Feels Like</span>
-                      <span>
-                        {convertKelvinToCelsius(firstData?.main.feels_like ?? 22)}º
-                      </span>
-                      <p className="text-xs space-x-2">
-                        <span>
-                          {convertKelvinToCelsius(firstData?.main.temp_min ?? 22)}º↓{" "}
-                        </span>
-                        <span>
-                          {" "}{convertKelvinToCelsius(firstData?.main.temp_min ?? 22)}º↑
-                        </span>
+                    <span className="text-5xl">{convertKelvinToCelsius(firstData?.main.temp ?? 296.37)}º</span>
+                    <p className="text-xs space-x-1 whitespace-nowrap"><span>Feels Like</span><span>{convertKelvinToCelsius(firstData?.main.feels_like ?? 22)}º</span>
+                      <p className="text-xs space-x-2"><span>{convertKelvinToCelsius(firstData?.main.temp_min ?? 22)}º↓{" "}</span>
+                        <span>{" "}{convertKelvinToCelsius(firstData?.main.temp_min ?? 22)}º↑</span>
                       </p>
                     </p>
                   </div>
